@@ -2,18 +2,13 @@ package com.agora.samtan.agorabroadcast;
 
 import android.content.Intent;
 import android.graphics.PorterDuff;
-import android.support.annotation.Nullable;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.util.Log;
+import android.support.v7.app.AppCompatActivity;
 import android.view.SurfaceView;
-import android.view.View;   ;//;.;
+import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 
-import com.agora.samtan.agorabroadcast.activity.LoginActivity;
-
-import io.agora.rtc.Constants;
 import io.agora.rtc.IRtcEngineEventHandler;
 import io.agora.rtc.RtcEngine;
 import io.agora.rtc.video.VideoCanvas;
@@ -22,8 +17,8 @@ import io.agora.rtc.video.VideoEncoderConfiguration;
 public class VideoActivity extends AppCompatActivity {
 
     private RtcEngine mRtcEngine;
+    private String appID;
     private String channelName;
-    private int channelProfile;
     private IRtcEngineEventHandler mRtcEventHandler = new IRtcEngineEventHandler() {
 
         @Override
@@ -87,12 +82,8 @@ public class VideoActivity extends AppCompatActivity {
         setContentView(R.layout.activity_video);
 
         Intent intent = getIntent();
+        appID = intent.getStringExtra(MainActivity.idMessage);
         channelName = intent.getStringExtra(MainActivity.channelMessage);
-        channelProfile = intent.getIntExtra(MainActivity.profileMessage, -1);
-
-        if (channelProfile == -1) {
-            Log.e("TAG: ", "No profile");
-        }
 
         initAgoraEngineAndJoinChannel();
     }
@@ -117,9 +108,9 @@ public class VideoActivity extends AppCompatActivity {
 
     private void setupRemoteVideo(int uid) {
         FrameLayout container = (FrameLayout) findViewById(R.id.remote_video_view_container);
-//        if (container.getChildCount() > 1) {
-//            return;
-//        }
+        if (container.getChildCount() > 1) {
+            return;
+        }
 
         SurfaceView surfaceView = RtcEngine.CreateRendererView(getBaseContext());
         container.addView(surfaceView);
@@ -133,8 +124,6 @@ public class VideoActivity extends AppCompatActivity {
 
     private void initAgoraEngineAndJoinChannel() {
         initalizeAgoraEngine();
-        mRtcEngine.setChannelProfile(Constants.CHANNEL_PROFILE_LIVE_BROADCASTING);
-        mRtcEngine.setClientRole(channelProfile);
         setupVideoProfile();
         setupLocalVideo();
         joinChannel();
@@ -142,7 +131,7 @@ public class VideoActivity extends AppCompatActivity {
 
     private void initalizeAgoraEngine() {
         try {
-            mRtcEngine = RtcEngine.create(getBaseContext(), getString(R.string.private_app_id), mRtcEventHandler);
+            mRtcEngine = RtcEngine.create(getBaseContext(), appID, mRtcEventHandler);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -187,10 +176,5 @@ public class VideoActivity extends AppCompatActivity {
 
     public void onEndCallClicked(View view) {
         finish();
-    }
-
-    public void onChatClicked(View view) {
-        Intent loginIntent = new Intent(this, LoginActivity.class);
-        startActivity(loginIntent);
     }
 }
